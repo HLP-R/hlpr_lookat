@@ -44,8 +44,8 @@ import PyKDL
 from geometry_msgs.msg import Vector3, Transform
 from manipulation.srv import LookAt, LookAtResponse, LookAtT, LookAtTResponse, LookAtTS, LookAtTSResponse
 
-from look_at_kinematics import LookAtKin
-from pantilt import PanTilt
+from hlpr_lookat.look_at_kinematics import LookAtKin
+from hlpr_lookat.pantilt import PanTilt
 
 def transform_to_kdl(t):
   return PyKDL.Frame(PyKDL.Rotation.Quaternion(t.rotation.x, t.rotation.y,

@@ -41,7 +41,7 @@ import rospy
 import tf2_ros
 import time
 
-from manipulation.srv import LookAt, LookAtT, LookAtTS
+from hlpr_lookat.srv import LookAt, LookAtT, LookAtTS
 from geometry_msgs.msg import Vector3
 
 

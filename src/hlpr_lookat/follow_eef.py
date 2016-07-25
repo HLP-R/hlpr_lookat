@@ -41,9 +41,9 @@ from geometry_msgs.msg import *
 import rospy
 import tf2_ros
 import time
-from lookat import *
-from lookat.look_at_kinematics import *
-from lookat.pantilt import *
+from hlpr_lookat import *
+from hlpr_lookat.look_at_kinematics import *
+from hlpr_lookat.pantilt import *
 
 class FollowEef:
   def __init__(self, root = 'base_link', ee_frame = 'right_ee_link', pt_base = 'pan_base_link', kinect_frame = 'kinect_ir_optical_frame'):
