@@ -31,9 +31,6 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
-# A script to use pocketsphinx's "keyphrase spotting" feature with 
-# python and ros. Note that it
-#
 # Authors: Baris Akgun 
 
 import roslib; 

@@ -31,8 +31,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
-# A script to use pocketsphinx's "keyphrase spotting" feature with 
-# python and ros. Note that it
+# An example of hot to follow the end effector without using the lookout service
 #
 # Authors: Baris Akgun 
 
