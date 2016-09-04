@@ -39,7 +39,7 @@ import time
 import PyKDL
 
 from geometry_msgs.msg import Vector3, Transform
-from manipulation.srv import LookAt, LookAtResponse, LookAtT, LookAtTResponse, LookAtTS, LookAtTSResponse
+from hlpr_lookat.srv import LookAt, LookAtResponse, LookAtT, LookAtTResponse, LookAtTS, LookAtTSResponse
 
 from hlpr_lookat.look_at_kinematics import LookAtKin
 from hlpr_lookat.pantilt import PanTilt
