@@ -1,0 +1,6 @@
+<launch>
+
+  <node name="hlpr_lookat_server" pkg="hlpr_lookat" type="look_at_service.py" respawn="false" output="screen" />
+  <node name="hlpr_lookat_eef" pkg="hlpr_lookat" type="look_at_eef.py" respawn="false" output="screen" />
+</launch>
+
