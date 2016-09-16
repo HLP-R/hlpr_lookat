@@ -17,8 +17,8 @@ class LookAtEEF():
     rospy.wait_for_service('lookat_vec3')
     self.lookat = rospy.ServiceProxy('lookat_vec3', LookAt)
     rospy.logwarn("Lookat service loaded")
-    rospy.Subscriber("eef_pose", Pose, self.poseCb)
-    rospy.Subscriber("lookat_eef_toggle", Bool, self.toggleCb)
+    rospy.Subscriber("eef_pose", Pose, self.poseCb, queue_size=1)
+    rospy.Subscriber("lookat_eef_toggle", Bool, self.toggleCb, queue_size=1)
     self.toggle = False
     self.prevX = 0.0
     self.prevZ = 0.0
@@ -34,20 +34,22 @@ class LookAtEEF():
     dx = pos.x - self.prevX
     dz = pos.z - self.prevZ
     dist = math.sqrt((dx ** 2) + (dz ** 2))
+
+    # Don't need to send service command for all distances
     if dist < 0.05:
       return
-    print "dist: " + str(dist)
+    #print "dist: " + str(dist)
     self.prevX = pos.x
     self.prevZ = pos.z
     quat = msg.orientation
     orient = tf.transformations.euler_from_quaternion([quat.x,quat.y,quat.z,quat.w])
     self.eePose = [pos.x, pos.y, pos.z, orient[0], orient[1], orient[2]]
-    print self.eePose
+    #print self.eePose
     self.lookatPos(self.eePose)
 
   def lookatPos(self, pos):
-    if pos[0] < 0.9:
-      return
+    #if pos[0] < 0.9:
+    #  return
     try:
       vec = Vector3()
       vec.x = pos[0]

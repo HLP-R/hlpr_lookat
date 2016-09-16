@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="repeat_pan_tilt" default="1"/>
+
+  <node name="hlpr_lookat_server" pkg="hlpr_lookat" type="look_at_service.py" respawn="false" output="screen" >
+    <param name="repeat_pan_tilt" value="$(arg repeat_pan_tilt)"/>
+  </node>
+
+</launch>
+
