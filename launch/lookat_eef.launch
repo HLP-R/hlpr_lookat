@@ -1,6 +1,15 @@
+<?xml version="1.0"?>
 <launch>
 
-  <node name="hlpr_lookat_server" pkg="hlpr_lookat" type="look_at_service.py" respawn="false" output="screen" />
+  <arg name="start_service" default="true"/>
+  <arg name="repeat_pan_tilt" default="10"/>
+ 
+  <group if="$(arg start_service)"> 
+    <include file="$(find hlpr_lookat)/launch/start_lookat_service.launch">
+      <arg name="repeat_pan_tilt" value="$(arg repeat_pan_tilt)"/>
+    </include>
+  </group>
+
   <node name="hlpr_lookat_eef" pkg="hlpr_lookat" type="look_at_eef.py" respawn="false" output="screen" />
 </launch>
 

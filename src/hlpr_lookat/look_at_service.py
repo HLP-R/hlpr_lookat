@@ -95,11 +95,11 @@ class LookAtService:
   def lookat(self,in_vec3):
     des_pos = transform_vec3(in_vec3, self.base2pantilt)
     theta = self.head.headIK([des_pos.x, des_pos.y, des_pos.z])
-    print theta
+    #print theta
     if theta[0] is None:
       return False
     else:
-      self.pt.set_pantilt(theta)
+      self.pt.set_pantilt(theta, repetitions=self.repeat_command_num)
       return True
 
   def handle_req_v3(self,req):
@@ -125,6 +125,10 @@ class LookAtService:
 
   def init_service(self, spin = True):
     rospy.init_node(self.base_name + '_server')
+
+    # Defaults to 10 if we don't have this parameter set
+    self.repeat_command_num = rospy.get_param("~repeat_pan_tilt", 10)
+    rospy.logwarn("Repeat Pan/Tilt command is set to %d" % self.repeat_command_num)
 
     self.tfBuffer = tf2_ros.Buffer()
     self.listener = tf2_ros.TransformListener(self.tfBuffer)
