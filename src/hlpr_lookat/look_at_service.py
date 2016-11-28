@@ -82,6 +82,7 @@ class LookAtService:
 
   #to be used in converting from base_link to pantilt base
   def _def_base2pantilt(self):
+
     self.base2pantilt = Transform()
     self.base2pantilt.translation.x = -0.395
     self.base2pantilt.translation.y =  0.0
@@ -91,7 +92,16 @@ class LookAtService:
     self.base2pantilt.rotation.y = 0.0
     self.base2pantilt.rotation.z = 0.0
     self.base2pantilt.rotation.w = 1.0
-    
+  
+  def _def_base2pantilt_custom(self, x,y,z):
+
+      #self.base2pantilt.translation.x = -0.202
+      #self.base2pantilt.translation.y =  0.0
+      #self.base2pantilt.translation.z = -1.440
+      self.base2pantilt.translation.x = x
+      self.base2pantilt.translation.y = y
+      self.base2pantilt.translation.z = z
+  
   def lookat(self,in_vec3):
     des_pos = transform_vec3(in_vec3, self.base2pantilt)
     theta = self.head.headIK([des_pos.x, des_pos.y, des_pos.z])
@@ -129,6 +139,12 @@ class LookAtService:
     # Defaults to 10 if we don't have this parameter set
     self.repeat_command_num = rospy.get_param("~repeat_pan_tilt", 10)
     rospy.logwarn("Repeat Pan/Tilt command is set to %d" % self.repeat_command_num)
+
+    # Check what robot we're using - default false
+    self.poli_urdf = rospy.get_param("~poli_urdf", False)
+    if self.poli_urdf:
+      self._def_base2pantilt_custom(-0.202, 0.0, -1.440)
+      rospy.loginfo("Poli URDF Flag set to  %s" % self.poli_urdf)
 
     self.tfBuffer = tf2_ros.Buffer()
     self.listener = tf2_ros.TransformListener(self.tfBuffer)

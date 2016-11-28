@@ -2,9 +2,11 @@
 <launch>
 
   <arg name="repeat_pan_tilt" default="1"/>
+  <arg name="poli_urdf" default="false"/>
 
   <node name="hlpr_lookat_server" pkg="hlpr_lookat" type="look_at_service.py" respawn="false" output="screen" >
     <param name="repeat_pan_tilt" value="$(arg repeat_pan_tilt)"/>
+    <param name="poli_urdf" value="$(arg poli_urdf)"/>
   </node>
 
 </launch>

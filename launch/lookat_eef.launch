@@ -3,10 +3,12 @@
 
   <arg name="start_service" default="true"/>
   <arg name="repeat_pan_tilt" default="10"/>
+  <arg name="poli_urdf" default="false"/>
  
   <group if="$(arg start_service)"> 
     <include file="$(find hlpr_lookat)/launch/start_lookat_service.launch">
       <arg name="repeat_pan_tilt" value="$(arg repeat_pan_tilt)"/>
+      <arg name="poli_urdf" value="$(arg poli_urdf)"/>
     </include>
   </group>
 
