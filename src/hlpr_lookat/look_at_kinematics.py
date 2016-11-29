@@ -55,7 +55,7 @@ def trigSolution(params):
 
 #This only do kinematics wrt pan base. It is upto the programmer to provide the correct positions. This is a concious choice made by baris
 class LookAtKin:
-  def __init__(self, params=None, axes_mapping = None):
+  def __init__(self, params=None, axes_mapping = None, pan_limits=None, tilt_limits=None):
 
     #params: servo1 to servo2 up, servo2 to the right, up and forward 
     if params is None:
@@ -69,11 +69,20 @@ class LookAtKin:
       #self.pt_params = [-0.0985, 0.03325, -0.04201 ,0.0245]
       self.pt_params = [-0.0985, 0.0425, -0.04201 ,0.0245]
 
+    else:
+      self.pt_params = params
+
     #whether to calculate the joint position for the imaginary link at the end for ik
     self.calc_ik_im_trans = False
 
-    self.pan_limits  = [-pi/3.,pi/2.]
-    self.tilt_limits = [-pi/3., pi/3.]
+    if pan_limits is None:
+      self.pan_limits  = [-pi/3.,pi/2.]
+    else:
+      self.pan_limits=pan_limits
+    if tilt_limits is None:
+      self.tilt_limits = [-pi/3., pi/3.]
+    else:
+      self.tilt_limits=tilt_limits
 
     #mapping the axes orientations from kinect to base
     #robot to kin | kin to robot
