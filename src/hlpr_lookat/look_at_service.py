@@ -144,6 +144,12 @@ class LookAtService:
     self.poli_urdf = rospy.get_param("~poli_urdf", False)
     if self.poli_urdf:
       self._def_base2pantilt_custom(-0.202, 0.0, -1.440)
+
+      # Generate a different IK solution using new urdf offsets
+      self.head = LookAtKin(params=[-0.131, 0.0425, (-0.04201-0.03425) ,(0.0245+0.1125)],
+                            pan_limits=[-0.523599,0.523599],
+                            tilt_limits=[-0.174533,0.785398])
+
       rospy.loginfo("Poli URDF Flag set to  %s" % self.poli_urdf)
 
     self.tfBuffer = tf2_ros.Buffer()
