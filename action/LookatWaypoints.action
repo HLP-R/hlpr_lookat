@@ -1,0 +1,9 @@
+# Goal
+geometry_msgs/TransformStamped[] scan_positions
+duration[] scan_times
+---
+# Result
+bool success
+---
+# Feedback
+int32 scan_index
