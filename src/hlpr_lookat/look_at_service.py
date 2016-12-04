@@ -38,7 +38,8 @@ import tf2_ros
 import time
 import PyKDL
 
-from geometry_msgs.msg import Vector3, Transform
+from geometry_msgs.msg import Vector3, Transform, PoseStamped, Point
+import tf2_geometry_msgs
 from hlpr_lookat.srv import LookAt, LookAtResponse, LookAtT, LookAtTResponse, LookAtTS, LookAtTSResponse
 
 from hlpr_lookat.look_at_kinematics import LookAtKin
@@ -125,8 +126,21 @@ class LookAtService:
   def handle_req_s_tr(self,req):
     resp = LookAtTSResponse()
     try:
+      # Get position from the request
+      pos = req.desired_s_tr.transform.translation
+
+      # Lookup the transform between frames
       trans = self.tfBuffer.lookup_transform(self.base, req.desired_s_tr.child_frame_id, rospy.Time(0))
-      resp.success = self.lookat(trans.transform.translation)
+
+      # Apply the transform to the requested position
+      pose = PoseStamped()
+      pose.pose.position = Point(pos.x, pos.y, pos.z)
+      pose.pose.orientation = req.desired_s_tr.transform.rotation
+      trans = tf2_geometry_msgs.do_transform_pose(pose, trans).pose.position
+
+      # Send off the request
+      resp.success = self.lookat(trans)
+
     except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
       print 'Cannot lookupTransform'
       resp.success = False
