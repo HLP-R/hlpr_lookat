@@ -147,8 +147,8 @@ class LookAtService:
 
       # Generate a different IK solution using new urdf offsets
       self.head = LookAtKin(params=[-0.131, 0.0425, (-0.04201-0.03425) ,(0.0245+0.1125)],
-                            pan_limits=[-0.523599,0.523599],
-                            tilt_limits=[-0.174533,0.785398])
+                            pan_limits=[-0.75,0.75],
+                            tilt_limits=[-0.25,0.589])
 
       rospy.loginfo("Poli URDF Flag set to  %s" % self.poli_urdf)
 
