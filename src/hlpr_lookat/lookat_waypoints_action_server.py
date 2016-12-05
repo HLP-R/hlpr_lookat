@@ -62,6 +62,7 @@ class LookatWaypoints:
 		self.server.start()
 
 		# Do we need to load any parameters? 
+		self.verbose = rospy.get_param("~verbose", False)
 
 		# Create global result to return
 		self.result = LookatWaypointsResult()
@@ -88,8 +89,8 @@ class LookatWaypoints:
 				pos = scan_locs[i]
 				time = time_durations[i]
 				trans = pos.transform.translation
-				# TODO: Add a flag for verbose option
-				rospy.loginfo("Looking at location #:%d for %0.2f seconds. Values are (X: %0.2f, Y: %0.2f, Z: %0.2f) in frame: %s" % (i, time.to_sec(), trans.x, trans.y, trans.z, pos.child_frame_id))
+				if self.verbose:
+					rospy.loginfo("Looking at location #:%d for %0.2f seconds. Values are (X: %0.2f, Y: %0.2f, Z: %0.2f) in frame: %s" % (i, time.to_sec(), trans.x, trans.y, trans.z, pos.child_frame_id))
 
 				# Send the position command off
 				try:
