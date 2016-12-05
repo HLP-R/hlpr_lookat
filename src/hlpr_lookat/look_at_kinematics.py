@@ -55,7 +55,9 @@ def trigSolution(params):
 
 #This only do kinematics wrt pan base. It is upto the programmer to provide the correct positions. This is a concious choice made by baris
 class LookAtKin:
-  def __init__(self, params=None, axes_mapping = None, pan_limits=None, tilt_limits=None):
+  def __init__(self, params=None, axes_mapping = None, pan_limits=None, tilt_limits=None, verbose=False):
+
+    self.verbose = verbose # For printing
 
     #params: servo1 to servo2 up, servo2 to the right, up and forward 
     if params is None:
@@ -134,11 +136,13 @@ class LookAtKin:
 
     if t1 < self.pan_limits[0] or t1 > self.pan_limits[1]:
       #raise Exception("The pan joint is out of limits")
-      print "The pan joint is out of limits"
+      if self.verbose:
+        print "The pan joint is out of limits"
 
     if t2 < self.tilt_limits[0] or t1 > self.tilt_limits[1]:
       #raise Exception("The tilt joint is out of limits")
-      print "The tilt joint is out of limits"
+      if self.verbose:
+        print "The tilt joint is out of limits"
 
     if self.calc_ik_im_trans:
       Dx = -pos[0] + (self.pt_params[1]*cos(t1) + self.pt_params[2]*sin(t1)*sin(t2))

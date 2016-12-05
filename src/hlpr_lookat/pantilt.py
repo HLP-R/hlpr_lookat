@@ -44,10 +44,10 @@ def clamp(x, limits):
   return max(min(x, limits[1]), limits[0])
 
 class PanTilt:
-  def __init__(self):
+  def __init__(self, pan_limits=None, tilt_limits=None, queue_size=10):
 
-    self.pubTilt = rospy.Publisher('/tilt_controller/command', Float64, queue_size=10)
-    self.pubPan  = rospy.Publisher('/pan_controller/command', Float64, queue_size=10)
+    self.pubTilt = rospy.Publisher('/tilt_controller/command', Float64, queue_size=queue_size)
+    self.pubPan  = rospy.Publisher('/pan_controller/command', Float64, queue_size=queue_size)
     
     self.subTilt = rospy.Subscriber("/tilt_controller/state", JointState, self.cb_tilt)
     self.subPan = rospy.Subscriber("/pan_controller/state", JointState, self.cb_pan)
@@ -55,8 +55,15 @@ class PanTilt:
     self.tilt_pos = 0.0
     self.pan_pos = 0.0
 
-    self.pan_limits  = [-pi/3.,pi/2.]
-    self.tilt_limits = [-pi/3., pi/3.]
+    if pan_limits is None:
+      self.pan_limits  = [-pi/3.,pi/2.]
+    else:
+      self.pan_limits = pan_limits
+
+    if tilt_limits is None:
+      self.tilt_limits = [-pi/3., pi/3.]
+    else:
+      self.tilt_limits = tilt_limits
 
   def set_pan(self, pos, repetitions = 10, rate = 10):
     ros_rate = rospy.Rate(rate)

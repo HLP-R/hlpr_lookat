@@ -152,19 +152,28 @@ class LookAtService:
 
     # Defaults to 10 if we don't have this parameter set
     self.repeat_command_num = rospy.get_param("~repeat_pan_tilt", 10)
-    rospy.logwarn("Repeat Pan/Tilt command is set to %d" % self.repeat_command_num)
+    self.pt = PanTilt(queue_size=self.repeat_command_num)
+    rospy.logwarn("Repeat Pan/Tilt command and queue is set to %d" % self.repeat_command_num)
 
     # Check what robot we're using - default false
     self.poli_urdf = rospy.get_param("~poli_urdf", False)
+    self.verbose = rospy.get_param("~verbose", False)
     if self.poli_urdf:
-      self._def_base2pantilt_custom(-0.202, 0.0, -1.440)
-
-      # Generate a different IK solution using new urdf offsets
-      self.head = LookAtKin(params=[-0.131, 0.0425, (-0.04201-0.03425) ,(0.0245+0.1125)],
-                            pan_limits=[-0.75,0.75],
-                            tilt_limits=[-0.25,0.589])
-
       rospy.loginfo("Poli URDF Flag set to  %s" % self.poli_urdf)
+
+      # Generate a different IK solution using new poli urdf offsets
+      pan_limits = [-0.75, 0.75]
+      tilt_limits = [-0.25, 0.589]
+      self._def_base2pantilt_custom(-0.202, 0.0, -1.440)
+      self.head = LookAtKin(params=[-0.131, 0.0425, (-0.04201-0.03425) ,(0.0245+0.1125)],
+                            pan_limits=pan_limits,
+                            tilt_limits=tilt_limits, verbose=self.verbose)
+      self.pt = PanTilt(pan_limits=pan_limits, tilt_limits=tilt_limits, queue_size=self.repeat_command_num)
+
+    elif self.verbose:
+      self.head = LookAtKin(verbose=self.verbose)
+
+    rospy.loginfo("Look at verbose set to  %s" % self.verbose)
 
     self.tfBuffer = tf2_ros.Buffer()
     self.listener = tf2_ros.TransformListener(self.tfBuffer)

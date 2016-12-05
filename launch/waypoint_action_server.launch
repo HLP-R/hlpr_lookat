@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="verbose" default="false"/>
+  <node name="lookat_waypoint_action" pkg="hlpr_lookat" type="lookat_waypoints_action_server.py" respawn="false" output="screen" >
+      <param name="verbose" value="$(arg verbose)"/>
+  </node>
+
+</launch>
+
