@@ -69,23 +69,24 @@ class LookatWaypoints:
 
 	def lookat_waypoints(self, goal):
 
-		# Check if we have been preempted. 
-		# Here for now - might make more sense in another spot
-		while not self.server.is_preempt_requested():
-	
-			# Pull out from the goal the locations to scan
-			scan_locs = goal.scan_positions
-			time_durations = goal.scan_times
 
-			# Check if the lengths match up - return error if not
-			if len(scan_locs) != len(time_durations):
-				self.result.success = False
-				err_msg = "The scan positions and scan times do not match up"
-				self.server.set_aborted(self.result, err_msg)
-				rospy.logerr(err_msg)
-				return	
-			
-			for i in xrange(len(scan_locs)):
+		# Pull out from the goal the locations to scan
+		scan_locs = goal.scan_positions
+		time_durations = goal.scan_times
+
+		# Check if the lengths match up - return error if not
+		if len(scan_locs) != len(time_durations):
+			self.result.success = False
+			err_msg = "The scan positions and scan times do not match up"
+			self.server.set_aborted(self.result, err_msg)
+			rospy.logerr(err_msg)
+			return	
+	
+		# Cycle through each of the waypoints	
+		for i in xrange(len(scan_locs)):
+			# Check if we have been preempted. 
+			# Here for now - might make more sense in another spot
+			if not self.server.is_preempt_requested():
 				pos = scan_locs[i]
 				time = time_durations[i]
 				trans = pos.transform.translation
@@ -98,18 +99,19 @@ class LookatWaypoints:
 					rospy.sleep(time)
 				except rospy.ServiceException, e:
 					rospy.logerr( "Lookat service call failed: %s" % e)
+			else:
+				self.result.success = False
+				abort_msg = "Looking at waypoints preempted" 
+				self.server.set_aborted(self.result, abort_msg)
+				rospy.loginfo(abort_msg)
+				return
 				
-			self.result.success = True
-			success_msg = "Finished looking at waypoints"
-			self.server.set_succeeded(self.result, success_msg)
-			rospy.loginfo(success_msg)
-			return
-
-		self.result.success = False
-		abort_msg = "Looking at waypoints preempted" 
-		self.server.set_aborted(self.result, abort_msg)
-		rospy.loginfo(abort_msg)
+		self.result.success = True
+		success_msg = "Finished looking at waypoints"
+		self.server.set_succeeded(self.result, success_msg)
+		rospy.loginfo(success_msg)
 		return
+
 		
 
 if __name__ == '__main__':
