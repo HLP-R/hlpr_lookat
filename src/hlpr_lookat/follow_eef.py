@@ -45,7 +45,7 @@ from hlpr_lookat.look_at_kinematics import *
 from hlpr_lookat.pantilt import *
 
 class FollowEef:
-  def __init__(self, root = 'base_link', ee_frame = 'right_ee_link', pt_base = 'pan_base_link', kinect_frame = 'kinect_ir_optical_frame'):
+  def __init__(self, root = 'base_link', ee_frame = 'j2s7s300_ee_link', pt_base = 'pan_base_link', kinect_frame = 'kinect_ir_optical_frame'):
     self.tf_buffer = tf2_ros.Buffer()
     self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
 
@@ -91,7 +91,7 @@ if __name__ == '__main__':
   rospy.init_node('follow_eef_test')
   feef = FollowEef()
   time.sleep(1)
-  rate =rospy.Rate(50)
+  rate =rospy.Rate(50)  #what is this doing??
   while not rospy.is_shutdown():
     theta = feef.lookAtHand()
   

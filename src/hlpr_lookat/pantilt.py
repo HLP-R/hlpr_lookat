@@ -36,9 +36,11 @@
 import roslib; 
 from std_msgs.msg import Float64
 from dynamixel_msgs.msg import JointState
+from dynamixel_controllers.srv import SetSpeed
 import rospy
 import time
 from math import *
+import thread
 
 def clamp(x, limits):
   return max(min(x, limits[1]), limits[0])
@@ -51,6 +53,9 @@ class PanTilt:
     
     self.subTilt = rospy.Subscriber("/tilt_controller/state", JointState, self.cb_tilt)
     self.subPan = rospy.Subscriber("/pan_controller/state", JointState, self.cb_pan)
+
+    self.speedTilt = rospy.ServiceProxy('/tilt_controller/set_speed', SetSpeed)
+    self.speedPan = rospy.ServiceProxy('/pan_controller/set_speed', SetSpeed)
 
     self.tilt_pos = 0.0
     self.pan_pos = 0.0
@@ -68,6 +73,9 @@ class PanTilt:
   def set_pan(self, pos, repetitions = 10, rate = 10):
     ros_rate = rospy.Rate(rate)
     pos = clamp(pos, self.pan_limits)
+    diff = self.pan_pos - pos
+    print "speed pan {0}".format(diff/(pi/3))
+    self.speedPan(speed=diff/(pi/3))
     for i in range(0,repetitions):
       self.pubPan.publish(pos)
       ros_rate.sleep()
@@ -75,17 +83,33 @@ class PanTilt:
   def set_tilt(self, pos, repetitions = 10, rate = 10):
     ros_rate = rospy.Rate(rate)
     pos = clamp(pos, self.tilt_limits)
+    diff = self.tilt_pos - pos
+    print "speed tilt {0}".format(diff/(pi/3))
+    self.speedTilt(speed=diff/(pi/3))
     for i in range(0,repetitions):
       self.pubTilt.publish(pos)
       ros_rate.sleep()
 
   def set_pantilt(self, pos, repetitions = 10, rate = 10):
-    ros_rate = rospy.Rate(rate)
+    # print "starting set pantilt"
+    ros_rate = rospy.Rate(20)
     pos[0] = clamp(pos[0], self.pan_limits)
     pos[1] = clamp(pos[1], self.tilt_limits)
+
+    diffPan = fabs(self.pan_pos - pos[0])
+    print "speed pan {0}".format(diffPan/(pi/3))
+    self.speedPan(speed=diffPan/(pi/3))
+
+    diffTilt = fabs(self.tilt_pos - pos[1])
+    print "speed tilt {0}".format(diffTilt/(pi/3))
+    self.speedTilt(speed=diffTilt/(pi/3))
+
     for i in range(0,repetitions):
-      self.pubPan.publish(pos[0])
-      self.pubTilt.publish(pos[1])
+      # self.pubPan.publish(pos[0])
+      # self.pubTilt.publish(pos[1])
+
+      thread.start_new_thread( self.pubPan.publish, (pos[0],))
+      thread.start_new_thread( self.pubTilt.publish, (pos[1],))
       ros_rate.sleep()
 
   def cb_tilt(self, js):
