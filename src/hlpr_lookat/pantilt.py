@@ -93,12 +93,12 @@ class PanTilt:
     pos[0] = clamp(pos[0], self.pan_limits)
     pos[1] = clamp(pos[1], self.tilt_limits)
 
-    diffPan = fabs(self.pan_pos - pos[0])
+    diffPan = fabs(self.pan_pos - pos[0]) #set speed based on dist
     self.speedPan(speed=diffPan/(pi/3))
     diffTilt = fabs(self.tilt_pos - pos[1])
     self.speedTilt(speed=diffTilt/(pi/3))
 
-    for i in range(0,repetitions):
+    for i in range(0,repetitions): #synchronize publishing
       thread.start_new_thread( self.pubPan.publish, (pos[0],))
       thread.start_new_thread( self.pubTilt.publish, (pos[1],))
       ros_rate.sleep()
