@@ -35,7 +35,7 @@
 
 import roslib; 
 from std_msgs.msg import Float64
-from dynamixel_msgs.msg import JointState
+from sensor_msgs.msg import JointState
 import rospy
 import time
 from math import *
@@ -45,16 +45,6 @@ def clamp(x, limits):
 
 class PanTilt:
   def __init__(self, pan_limits=None, tilt_limits=None, queue_size=10):
-
-    self.pubTilt = rospy.Publisher('/tilt_controller/command', Float64, queue_size=queue_size)
-    self.pubPan  = rospy.Publisher('/pan_controller/command', Float64, queue_size=queue_size)
-    
-    self.subTilt = rospy.Subscriber("/tilt_controller/state", JointState, self.cb_tilt)
-    self.subPan = rospy.Subscriber("/pan_controller/state", JointState, self.cb_pan)
-
-    self.tilt_pos = 0.0
-    self.pan_pos = 0.0
-
     if pan_limits is None:
       self.pan_limits  = [-pi/3.,pi/2.]
     else:
@@ -65,41 +55,44 @@ class PanTilt:
     else:
       self.tilt_limits = tilt_limits
 
-  def set_pan(self, pos, repetitions = 10, rate = 10):
+    self.pub_tilt = rospy.Publisher('/tilt_controller/command', Float64, queue_size=queue_size)
+    self.pub_pan  = rospy.Publisher('/pan_controller/command', Float64, queue_size=queue_size)
+    
+    rospy.Subscriber("/tilt_controller/state", JointState, self.cb_tilt)
+    rospy.Subscriber("/pan_controller/state", JointState, self.cb_pan)
+
+    self.tilt_pos = 0.0
+    self.pan_pos = 0.0
+
+  def set_pan(self, pan_position):
     ros_rate = rospy.Rate(rate)
     pos = clamp(pos, self.pan_limits)
-    for i in range(0,repetitions):
-      self.pubPan.publish(pos)
-      ros_rate.sleep()
+    self.pub_pan.publish(pan_position)
 
-  def set_tilt(self, pos, repetitions = 10, rate = 10):
+  def set_tilt(self, tilt_position):
     ros_rate = rospy.Rate(rate)
     pos = clamp(pos, self.tilt_limits)
-    for i in range(0,repetitions):
-      self.pubTilt.publish(pos)
-      ros_rate.sleep()
+    self.pub_tilt.publish(tilt_position)
 
-  def set_pantilt(self, pos, repetitions = 10, rate = 10):
+  def set_pan_tilt(self, pan_position, tilt_position):
     ros_rate = rospy.Rate(rate)
     pos[0] = clamp(pos[0], self.pan_limits)
     pos[1] = clamp(pos[1], self.tilt_limits)
-    for i in range(0,repetitions):
-      self.pubPan.publish(pos[0])
-      self.pubTilt.publish(pos[1])
-      ros_rate.sleep()
+    self.pub_pan.publish(pan_position)
+    self.pub_tilt.publish(tilt_position)
 
   def cb_tilt(self, js):
-    self.tilt_pos = js.current_pos
+    self.tilt_pos = js.position[0]
 
   def cb_pan(self, js):
-    self.pan_pos = js.current_pos
+    self.pan_pos = js.position[0]
 
 if __name__ == "__main__":
-  rospy.init_node('pantilt_test')
+  rospy.init_node('pan_tilt_test', anonymous=True)
   pt = PanTilt()
-  searchPattern = [[0.0,0.7], [0.3, 0.6],[-0.3, 0.6],[-0.3, 0.8],[0.3, 0.8]]
-  for i in range(0, len(searchPattern)):
-    pt.set_pantilt(searchPattern[i])
+  search_pattern = [[0.0,0.7], [0.3, 0.6],[-0.3, 0.6],[-0.3, 0.8],[0.3, 0.8]]
+  for i in range(0, len(search_pattern)):
+    pt.set_pan_tilt(search_pattern[i])
     time.sleep(0.5)
-  pt.set_pantilt([0,0])
+  pt.set_pan_tilt([0,0])
 

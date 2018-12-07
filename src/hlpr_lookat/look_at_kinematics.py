@@ -130,7 +130,7 @@ class LookAtKin:
       pos = lookat_position
       
     if pos[2] < 0:
-      raise Exception("The robot cannot look back")
+      raise Exception("The robot cannot look back. Target: {}".format(pos))
     t1 = trigSolution([pos[2], pos[0], self.pt_params[1]])
     t2 = trigSolution([sin(t1)*self.pt_params[1]-pos[2], cos(t1)*(pos[1]-self.pt_params[0]), cos(t1)*self.pt_params[2]])
 

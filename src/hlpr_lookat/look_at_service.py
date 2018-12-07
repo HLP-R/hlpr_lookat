@@ -43,7 +43,7 @@ import tf2_geometry_msgs
 from hlpr_lookat.srv import LookAt, LookAtResponse, LookAtT, LookAtTResponse, LookAtTS, LookAtTSResponse
 
 from hlpr_lookat.look_at_kinematics import LookAtKin
-from hlpr_lookat.pantilt import PanTilt
+from hlpr_lookat.pan_tilt import PanTilt
 
 def transform_to_kdl(t):
   return PyKDL.Frame(PyKDL.Rotation.Quaternion(t.rotation.x, t.rotation.y,
@@ -110,7 +110,7 @@ class LookAtService:
     if theta[0] is None:
       return False
     else:
-      self.pt.set_pantilt(theta, repetitions=self.repeat_command_num)
+      self.pt.set_pan_tilt(theta)
       return True
 
   def handle_req_v3(self,req):
@@ -151,9 +151,7 @@ class LookAtService:
     rospy.init_node(self.base_name + '_server')
 
     # Defaults to 10 if we don't have this parameter set
-    self.repeat_command_num = rospy.get_param("~repeat_pan_tilt", 10)
-    self.pt = PanTilt(queue_size=self.repeat_command_num)
-    rospy.logwarn("Repeat Pan/Tilt command and queue is set to %d" % self.repeat_command_num)
+    self.pt = PanTilt(queue_size=1)
 
     # Check what robot we're using - default false
     self.poli_urdf = rospy.get_param("~poli_urdf", False)
@@ -168,12 +166,13 @@ class LookAtService:
       self.head = LookAtKin(params=[-0.131, 0.0425, (-0.04201-0.03425) ,(0.0245+0.1125)],
                             pan_limits=pan_limits,
                             tilt_limits=tilt_limits, verbose=self.verbose)
-      self.pt = PanTilt(pan_limits=pan_limits, tilt_limits=tilt_limits, queue_size=self.repeat_command_num)
+      self.pt = PanTilt(pan_limits=pan_limits, tilt_limits=tilt_limits, queue_size=1)
 
-    elif self.verbose:
+    else:
       self.head = LookAtKin(verbose=self.verbose)
 
-    rospy.loginfo("Look at verbose set to  %s" % self.verbose)
+    if self.verbose:
+      rospy.loginfo("hlpr_lookat service is in Verbose mode")
 
     self.tfBuffer = tf2_ros.Buffer()
     self.listener = tf2_ros.TransformListener(self.tfBuffer)

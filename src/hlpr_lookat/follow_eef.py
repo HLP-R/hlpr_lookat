@@ -42,7 +42,7 @@ import tf2_ros
 import time
 from hlpr_lookat import *
 from hlpr_lookat.look_at_kinematics import *
-from hlpr_lookat.pantilt import *
+from hlpr_lookat.pan_tilt import *
 
 class FollowEef:
   def __init__(self, root = 'base_link', ee_frame = 'right_ee_link', pt_base = 'pan_base_link', kinect_frame = 'kinect_ir_optical_frame'):
@@ -83,7 +83,7 @@ class FollowEef:
       pos = [self.latest_pt_ee_transform.transform.translation.x,self.latest_pt_ee_transform.transform.translation.y,self.latest_pt_ee_transform.transform.translation.z]
       #theta = self.head.headIK(self.head.baseToObject(pos, [self.pt.pan_pos, self.pt.tilt_pos]))
       theta = self.head.headIK(pos)
-      self.pt.set_pantilt(theta)
+      self.pt.set_pan_tilt(theta)
       return theta
     return None
 

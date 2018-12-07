@@ -5,21 +5,14 @@ project(hlpr_lookat)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  actionlib_msgs
   geometry_msgs
   message_generation
   rospy
+  sensor_msgs
   std_msgs
-  geometry_msgs
-  actionlib_msgs
 )
 
-## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
-
-
-## Uncomment this if the package has a setup.py. This macro ensures
-## modules and global scripts declared therein get installed
-## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 catkin_python_setup()
 
 ################################################
@@ -46,13 +39,6 @@ catkin_python_setup()
 ##   * uncomment the generate_messages entry below
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
-## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
-
  add_service_files(
    FILES
    LookAt.srv
@@ -69,8 +55,9 @@ catkin_python_setup()
 ## Generate added messages and services with any dependencies listed here
  generate_messages(
    DEPENDENCIES
-   geometry_msgs
    actionlib_msgs
+   geometry_msgs
+   sensor_msgs
    std_msgs
  )
 
@@ -106,8 +93,8 @@ catkin_python_setup()
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES hlpr_lookat
-#  CATKIN_DEPENDS geometry_msg message_generation rospy std_msgs
-#  DEPENDS system_lib
+ CATKIN_DEPENDS std_msgs sensor_msgs geometry_msgs actionlib_msgs
+ DEPENDS message_runtime std_msgs sensor_msgs geometry_msgs actionlib_msgs
 )
 
 ###########

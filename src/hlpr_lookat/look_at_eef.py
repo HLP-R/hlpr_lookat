@@ -19,7 +19,7 @@ class LookAtEEF():
     rospy.logwarn("Lookat service loaded")
     rospy.Subscriber("eef_pose", Pose, self.poseCb, queue_size=1)
     rospy.Subscriber("lookat_eef_toggle", Bool, self.toggleCb, queue_size=1)
-    self.toggle = False
+    self.toggle = True
     self.prevX = 0.0
     self.prevZ = 0.0
 

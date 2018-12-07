@@ -1,3 +1,12 @@
+## MIGRATION NOTE
+
+This package is currently in the process being split into poli1 and poli2 versions. This is required for 3 reasons:
+ - The two robots have different joint limits
+ - The two robots have different base frame orientations
+ - Poli1 still uses dynamixel msgs (for an old version of the dynamixel driver), but Poli2 has a new version of the driver that uses JointState (more standardized, but not backwards compatible with the old version of this package).
+
+
+
 # HLP-R Lookat Package
 
 Would you look at that!
