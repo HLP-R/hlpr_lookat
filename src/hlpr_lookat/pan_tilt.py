@@ -44,42 +44,55 @@ def clamp(x, limits):
   return max(min(x, limits[1]), limits[0])
 
 class PanTilt:
+  #limits in form min, max, zero point
   def __init__(self, pan_limits=None, tilt_limits=None, queue_size=10):
-    if pan_limits is None:
-      self.pan_limits  = [-pi/3.,pi/2.]
+    self.robot = rospy.get_param("/ROBOT_NAME", "default")
+
+    if pan_limits is None and self.robot=="poli2":
+      self.pan_limits  = [-3.14,3.14, 0]
+    elif pan_limits is None:
+      self.pan_limits  = [-pi/3.,pi/2., 0]
     else:
       self.pan_limits = pan_limits
 
-    if tilt_limits is None:
-      self.tilt_limits = [-pi/3., pi/3.]
+    if tilt_limits is None and self.robot=="poli2":
+      self.tilt_limits  = [0.0,1.2,0.75]
+      self.tilt_conv = lambda x: -x
+    elif tilt_limits is None:
+      self.tilt_limits = [-pi/3., pi/3., 0]
+      self.tilt_conv = lambda x: x
     else:
       self.tilt_limits = tilt_limits
 
     self.pub_tilt = rospy.Publisher('/tilt_controller/command', Float64, queue_size=queue_size)
     self.pub_pan  = rospy.Publisher('/pan_controller/command', Float64, queue_size=queue_size)
+
+    #pan/tilt position in unknown state to start
+    self.tilt_pos = None
+    self.pan_pos = None
     
     rospy.Subscriber("/tilt_controller/state", JointState, self.cb_tilt)
     rospy.Subscriber("/pan_controller/state", JointState, self.cb_pan)
 
-    self.tilt_pos = 0.0
-    self.pan_pos = 0.0
-
+    
   def set_pan(self, pan_position):
-    ros_rate = rospy.Rate(rate)
+    pan_position += self.pan_limits[2]
+    
     pos = clamp(pos, self.pan_limits)
     self.pub_pan.publish(pan_position)
 
   def set_tilt(self, tilt_position):
-    ros_rate = rospy.Rate(rate)
+    tilt_position += self.tilt_limits[2]
+    
     pos = clamp(pos, self.tilt_limits)
-    self.pub_tilt.publish(tilt_position)
+    self.pub_tilt.publish(self.tilt_conv(tilt_position))
 
   def set_pan_tilt(self, pan_position, tilt_position):
-    ros_rate = rospy.Rate(rate)
-    pos[0] = clamp(pos[0], self.pan_limits)
-    pos[1] = clamp(pos[1], self.tilt_limits)
-    self.pub_pan.publish(pan_position)
-    self.pub_tilt.publish(tilt_position)
+    pan = clamp(pan_position, self.pan_limits)
+    tilt = clamp(tilt_position, self.tilt_limits)
+    self.pub_pan.publish(pan)
+    self.pub_tilt.publish(tilt)
+    rospy.sleep(3)
 
   def cb_tilt(self, js):
     self.tilt_pos = js.position[0]
