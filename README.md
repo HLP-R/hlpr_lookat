@@ -11,7 +11,7 @@ This package is currently in the process being split into poli1 and poli2 versio
 
 Would you look at that!
 
-This package has a few examples of how to do lookout related stuff. To get started look at the look_at_service.py. To run the service, just run it with `python look_at_service.py` for now. The package will be configured to do `rosrun` at some point.
+This package has a few examples of how to do lookout related stuff. To get started look at the lookat_server.py. To run the service, just run it with `python lookat_server.py` for now. The package will be configured to do `rosrun` at some point.
 
 When you run it, it creates 3 services: 
 

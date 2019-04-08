@@ -13,20 +13,38 @@ from geometry_msgs.msg import Pose, PoseStamped, Vector3
 
 class LookAtEEF():
   def __init__(self):
-    rospy.logwarn("Waiting for lookat service")
-    rospy.wait_for_service('lookat_vec3')
-    self.lookat = rospy.ServiceProxy('lookat_vec3', LookAt)
-    rospy.logwarn("Lookat service loaded")
-    rospy.Subscriber("eef_pose", Pose, self.poseCb, queue_size=1)
-    rospy.Subscriber("lookat_eef_toggle", Bool, self.toggleCb, queue_size=1)
     self.toggle = True
     self.prevX = 0.0
     self.prevZ = 0.0
 
-  def toggleCb(self, msg):
-    self.toggle = msg.data
+    lookat_topic = "/hlpr_lookat_vec3"
 
-  def poseCb(self, msg):
+    # a clean wait for service (no extraneous warnings)
+    while not rospy.is_shutdown():
+      try:
+        rospy.wait_for_service(lookat_topic, 10)
+        break
+      except Exception as e:
+        if rospy.is_shutdown():
+          return
+        rospy.logwarn("Waiting for lookat server")
+    if rospy.is_shutdown():
+      return
+
+    self.lookat = rospy.ServiceProxy(lookat_topic, LookAt)
+    rospy.loginfo("Lookat eef server has connected to lookat server.")
+
+    rospy.Subscriber("eef_pose", Pose, self.pose_cb, queue_size=1)
+    rospy.Subscriber("set_lookat_eef", Bool, self.set_cb, queue_size=1)
+
+  def set_cb(self, msg):
+    self.toggle = msg.data
+    if self.toggle:
+      rospy.loginfo("Looking at EEF")
+    else:
+      rospy.loginfo("Stop looking at EEF")
+
+  def pose_cb(self, msg):
     if not self.toggle:
       return
 
@@ -44,7 +62,7 @@ class LookAtEEF():
     quat = msg.orientation
     orient = tf.transformations.euler_from_quaternion([quat.x,quat.y,quat.z,quat.w])
     self.eePose = [pos.x, pos.y, pos.z, orient[0], orient[1], orient[2]]
-    #print self.eePose
+    print self.eePose
     self.lookatPos(self.eePose)
 
   def lookatPos(self, pos):
@@ -59,8 +77,13 @@ class LookAtEEF():
     except rospy.ServiceException, e:
       print "Lookat service call failed: %s"%e
 
-if __name__== '__main__':
-  rospy.init_node("hlpr_lookat_eef", anonymous=False)
-  rospy.loginfo("Starting the eef lookat node")
+
+def main():
+  rospy.init_node("hlpr_lookat_eef_server")
   lookat = LookAtEEF()
   rospy.spin()
+
+
+if __name__== '__main__':
+  main()
+

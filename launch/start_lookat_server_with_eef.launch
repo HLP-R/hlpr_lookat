@@ -5,15 +5,15 @@
   <arg name="repeat_pan_tilt" default="10"/>
   <arg name="poli_urdf" default="false"/>
   <arg name="verbose" default="false"/>
- 
-  <group if="$(arg start_service)"> 
-    <include file="$(find hlpr_lookat)/launch/start_lookat_service.launch">
+
+  <group if="$(arg start_service)">
+    <include file="$(find hlpr_lookat)/launch/start_lookat_server.launch">
       <arg name="repeat_pan_tilt" value="$(arg repeat_pan_tilt)"/>
       <arg name="poli_urdf" value="$(arg poli_urdf)"/>
       <arg name="verbose" value="$(arg verbose)"/>
     </include>
   </group>
 
-  <node name="hlpr_lookat_eef" pkg="hlpr_lookat" type="look_at_eef.py" respawn="false" output="screen" />
+  <node name="hlpr_lookat_eef" pkg="hlpr_lookat" type="lookat_eef_server" respawn="true" output="screen" />
 </launch>
 

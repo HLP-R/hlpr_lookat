@@ -1,0 +1,14 @@
+#!/usr/bin/python
+import rospy
+from hlpr_lookat.pan_tilt import PanTilt
+
+if __name__ == "__main__":
+  rospy.init_node('pan_tilt_test', anonymous=True)
+  pt = PanTilt()
+  search_pattern = [[0.0,-0.8], [0.3, 0.3],[-0.3, 0.2],[-0.3, -0.8],[0.3, 0.1]]
+  for i in range(0, len(search_pattern)):
+    pt.set_pan_tilt(search_pattern[i][0], search_pattern[i][1], wait=True)
+    print("Done")
+    rospy.sleep(2.0)
+  pt.set_pan_tilt(0,0, wait=True)
+

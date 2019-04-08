@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Software License Agreement (BSD License)
 #
-# Copyright (c) 2016, HLP-R
+# Copyright (c) 2016-2019, HLP-R
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,9 +31,9 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
-# Authors: Baris Akgun 
+# Authors: Baris Akgun, Elaine Short, Adam Allevato
 
-import roslib; 
+import roslib;
 from std_msgs.msg import Float64
 from sensor_msgs.msg import JointState
 import rospy
@@ -48,7 +48,9 @@ class PanTilt:
   #limits in form min, max, zero point
   def __init__(self, pan_limits=None, tilt_limits=None, queue_size=10):
     self.robot = rospy.get_param("/ROBOT_NAME", "default")
-    
+
+    rospy.loginfo("Launching pan/tilt with robot name " + self.robot)
+
     if pan_limits is None and self.robot=="poli2":
       self.pan_limits  = [-3.14,3.14, 0]
     elif pan_limits is None:
@@ -61,7 +63,7 @@ class PanTilt:
       self.tilt_conv = lambda x: -x
     elif tilt_limits is None:
       self.tilt_limits = [-pi/3., pi/3., 0]
-      self.tilt_conv = lambda x: x
+      self.tilt_conv = lambda x: -x
     else:
       self.tilt_limits = tilt_limits
 
@@ -69,28 +71,36 @@ class PanTilt:
     self.tilt_pos = None
     self.pan_pos = None
 
-    rospy.Subscriber("/tilt_controller/state", JointState, self.cb_tilt)
-    rospy.Subscriber("/pan_controller/state", JointState, self.cb_pan)
-
     if self.robot=="poli2":
       self.pub_tilt = rospy.Publisher('/tilt_motor/position_controller/command', Float64, queue_size=queue_size)
       self.pub_pan  = rospy.Publisher('/pan_motor/position_controller/command', Float64, queue_size=queue_size)
       rospy.Subscriber("/tilt_motor/joint_states", JointState, self.cb_tilt)
       rospy.Subscriber("/pan_motor/joint_state", JointState, self.cb_pan)
     else:
+      # we're on poli 1. So use dynamixel messages. Hope you have them installed!
+      from dynamixel_msgs import msg as dynamixel_msg
       self.pub_tilt = rospy.Publisher('/tilt_controller/command', Float64, queue_size=queue_size)
       self.pub_pan  = rospy.Publisher('/pan_controller/command', Float64, queue_size=queue_size)
-    rospy.sleep(0.5)
+      rospy.Subscriber("/tilt_controller/state", dynamixel_msg.JointState, self.cb_tilt)
+      rospy.Subscriber("/pan_controller/state", dynamixel_msg.JointState, self.cb_pan)
 
+    rospy.loginfo("Connecting to pan/tilt motors...")
+    log_time = 10
+    sleep_time = 0.1
+    total_sleep = 0
+    while (self.pan_pos is None or self.tilt_pos is None):
+      rospy.sleep(sleep_time)
+      if rospy.is_shutdown():
+        break
+      if total_sleep < log_time:
+        total_sleep += sleep_time
+      else:
+        rospy.logwarn_throttle(log_time, "Waiting for pan/tilt position publishers...")
+    rospy.loginfo("Connected to pan/tilt motors")
 
-    while self.pan_pos is None or self.tilt_pos is None:
-      rospy.sleep(0.1)
-      rospy.logwarn_throttle(1,"Waiting for pan/tilt position publishers...")
-    
-    
   def set_pan(self, pan_position, wait=False):
     pan_position += self.pan_limits[2]
-    
+
     pos = clamp(pos, self.pan_limits)
     self.pub_pan.publish(pan_position)
     if wait:
@@ -98,18 +108,15 @@ class PanTilt:
 
   def set_tilt(self, tilt_position, wait=False):
     pos = clamp(tilt_position + self.tilt_limits[2], self.tilt_limits)
-    if self.robot=="poli2":
-      tilt = -1*tilt
     self.pub_tilt.publish(self.tilt_conv(tilt_position))
     if wait:
       self.wait()
 
   def set_pan_tilt(self, pan_position, tilt_position, wait=False):
-    print "requested pan/tilt:", pan_position, tilt_position 
+    print "requested pan/tilt:", pan_position, tilt_position
     pan = clamp(pan_position + self.pan_limits[2], self.pan_limits)
     tilt = clamp(tilt_position + self.tilt_limits[2], self.tilt_limits)
-    if self.robot=="poli2":
-      tilt = -1*tilt
+    tilt = self.tilt_conv(tilt_position)
     print "setting pan/tilt:", pan, tilt
     self.pub_pan.publish(pan)
     self.pub_tilt.publish(tilt)
@@ -131,18 +138,13 @@ class PanTilt:
       self.prev_tilt = self.tilt_pos
 
   def cb_tilt(self, js):
-    self.tilt_pos = js.position[0]
+    if self.robot == "poli2":
+      self.tilt_pos = js.position[0]
+    else:
+      self.tilt_pos = js.current_pos
 
   def cb_pan(self, js):
-    self.pan_pos = js.position[0]
-
-if __name__ == "__main__":
-  rospy.init_node('pan_tilt_test', anonymous=True)
-  pt = PanTilt()
-  search_pattern = [[0.0,-0.8], [0.3, 0.3],[-0.3, 0.2],[-0.3, -0.8],[0.3, 0.1]]
-  for i in range(0, len(search_pattern)):
-    pt.set_pan_tilt(search_pattern[i][0], search_pattern[i][1], wait=True)
-    print("Done")
-    rospy.sleep(2.0)
-  pt.set_pan_tilt(0,0, wait=True)
-
+    if self.robot == "poli2":
+      self.pan_pos = js.position[0]
+    else:
+      self.pan_pos = js.current_pos

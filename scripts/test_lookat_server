@@ -1,0 +1,23 @@
+#!/usr/bin/python
+import rospy
+from hlpr_lookat.lookat_server import LookatServer
+from hlpr_lookat.srv import LookAt, LookAtTSRequest
+
+if __name__=="__main__":
+    print("Starting LookAtServer test")
+    srv = LookatServer(spin=False)
+
+    req = LookAtTSRequest()
+    req.desired_s_tr.child_frame_id = "/head_link"
+    req.desired_s_tr.transform.rotation.w = 1.0
+
+    req.desired_s_tr.transform.translation.x = 1.0
+    req.desired_s_tr.transform.translation.y = 0.5
+    srv.handle_req_s_tr(req)
+
+    req.desired_s_tr.transform.translation.x = 1.0
+    req.desired_s_tr.transform.translation.y = 0.0
+    srv.handle_req_s_tr(req)
+
+    rospy.sleep(10)
+    rospy.signal_shutdown("test complete")

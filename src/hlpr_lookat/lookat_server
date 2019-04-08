@@ -2,21 +2,21 @@
 
 # Copyright (c) 2017, Elaine Short, SIM Lab
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 # * Redistributions of source code must retain the above copyright notice, this
 #   list of conditions and the following disclaimer.
-# 
+#
 # * Redistributions in binary form must reproduce the above copyright notice,
 #   this list of conditions and the following disclaimer in the documentation
 #   and/or other materials provided with the distribution.
-# 
+#
 # * Neither the name of the SIM Lab nor the names of its
 #   contributors may be used to endorse or promote products derived from
 #   this software without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -41,20 +41,18 @@ import geometry_msgs
 class LookatServer:
     def __init__(self):
         self.base_name = "hlpr_lookat"
-        rospy.init_node(self.base_name + '_server')
-        self.pt = PanTilt(queue_size=1) #this will handle the joint limits
+        # this will handle the joint limits
+        self.pt = PanTilt(queue_size=1)
 
         self.default_frame = "base_link"
         self.head_frame = "head_link"
-        
-        self.listener = tf.TransformListener()
-        rospy.sleep(1.0)
-        
-        #s_v3 = rospy.Service(self.base_name + '_vec3', LookAt, self.handle_req_v3)
-        #s_tr  = rospy.Service(self.base_name + '_tr', LookAtT, self.handle_req_tr)
-        #s_s_tt = rospy.Service(self.base_name + '_s_tr', LookAtTS, self.handle_req_s_tr)
 
-    
+        self.listener = tf.TransformListener()
+
+        s_v3 = rospy.Service(self.base_name + '_vec3', LookAt, self.handle_req_v3)
+        s_tr  = rospy.Service(self.base_name + '_tr', LookAtT, self.handle_req_tr)
+        s_s_tt = rospy.Service(self.base_name + '_s_tr', LookAtTS, self.handle_req_s_tr)
+
     def handle_req_v3(self, req):
         resp = LookAtResponse()
         resp.success = self.lookat(req.desired_position)
@@ -67,7 +65,6 @@ class LookatServer:
 
     def handle_req_s_tr(self, req):
         resp = LookAtTSResponse()
-        
         resp.success = self.lookat(req.desired_s_tr.transform.translation,
                                    req.desired_s_tr.transform.rotation,
                                    req.desired_s_tr.child_frame_id)
@@ -103,7 +100,6 @@ class LookatServer:
                 pos.header.frame_id = pos_frame
                 pos.pose.orientation = orientation
 
-            
                 # Lookup the transform between frames
                 trans = self.listener.transformPose(self.head_frame, pos)
 
@@ -112,24 +108,18 @@ class LookatServer:
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 rospy.logwarn("Cannot look up translation, not moving head.")
                 return False
-        
+
         pan, tilt = self.pos2theta(position)
         print pan, tilt
         self.pt.set_pan_tilt(pan, tilt)
-            
+        return True
+
+
+def main():
+    rospy.init_node("hlpr_lookat_server")
+    server = LookatServer()
+    rospy.spin()
+
+
 if __name__=="__main__":
-    srv = LookatServer()
-
-    req = LookAtTSRequest()
-    req.desired_s_tr.transform.translation.x = 1.0
-    req.desired_s_tr.transform.translation.y = 0.0
-    req.desired_s_tr.transform.translation.z = 0.0
-    
-    req.desired_s_tr.transform.rotation.x = 0.0
-    req.desired_s_tr.transform.rotation.y = 0.0
-    req.desired_s_tr.transform.rotation.z = 0.0
-    req.desired_s_tr.transform.rotation.w = 1.0
-    
-    req.desired_s_tr.child_frame_id = "/head_link"
-
-    srv.handle_req_s_tr(req)
+    main()
