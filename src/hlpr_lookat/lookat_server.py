@@ -48,7 +48,8 @@ class LookatServer:
         self.head_frame = "head_link"
 
         self.listener = tf.TransformListener()
-
+        rospy.sleep(1.0)
+        
         s_v3 = rospy.Service(self.base_name + '_vec3', LookAt, self.handle_req_v3)
         s_tr  = rospy.Service(self.base_name + '_tr', LookAtT, self.handle_req_tr)
         s_s_tt = rospy.Service(self.base_name + '_s_tr', LookAtTS, self.handle_req_s_tr)

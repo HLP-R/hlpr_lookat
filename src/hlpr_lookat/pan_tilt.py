@@ -108,10 +108,8 @@ class PanTilt:
     return tilt
       
   def set_tilt(self, tilt_position, wait=False):
-    if self.robot == "poli2":
-      tilt = self.poli2_tilt_conv(tilt_position)
-    else:
-      tilt = clamp(tilt_position + self.tilt_limits[2], self.tilt_limits)
+    tilt = -tilt_position
+    tilt = clamp(tilt + self.tilt_limits[2], self.tilt_limits)
     self.pub_tilt.publish(tilt)
     if wait:
       self.wait()
@@ -120,10 +118,8 @@ class PanTilt:
     rospy.loginfo("{} {} {}".format("current pan/tilt:", self.pan_pos, self.tilt_pos))
     rospy.loginfo("{} {} {}".format("requested pan/tilt:", pan_position, tilt_position))
     pan = clamp(pan_position + self.pan_limits[2], self.pan_limits)
-    if self.robot == "poli2":
-      tilt = self.poli2_tilt_conv(tilt_position)
-    else:
-      tilt = clamp(tilt_position + self.tilt_limits[2], self.tilt_limits)
+    tilt = -tilt_position
+    tilt = clamp(tilt + self.tilt_limits[2], self.tilt_limits)
     
     rospy.loginfo("{} {} {}".format("setting pan/tilt:", pan, tilt))
     self.pub_pan.publish(pan)
