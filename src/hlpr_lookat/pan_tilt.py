@@ -59,11 +59,9 @@ class PanTilt:
       self.pan_limits = pan_limits
 
     if tilt_limits is None and self.robot=="poli2":
-      self.tilt_limits  = [0.0,0.9,0.65] #[0.0,1.2,0.65]<-use once wires go through neck
-      self.tilt_conv = lambda x: -x
+      self.tilt_limits  = [-1.2,0.0,-0.65]
     elif tilt_limits is None:
       self.tilt_limits = [-pi/3., pi/3., 0]
-      self.tilt_conv = lambda x: -x
     else:
       self.tilt_limits = tilt_limits
 
@@ -99,25 +97,35 @@ class PanTilt:
     rospy.loginfo("Connected to pan/tilt motors")
 
   def set_pan(self, pan_position, wait=False):
-    pan_position += self.pan_limits[2]
-
-    pos = clamp(pos, self.pan_limits)
-    self.pub_pan.publish(pan_position)
+    pan = clamp(pan_position + self.pan_limits[2], self.pan_limits)
+    self.pub_pan.publish(pan)
     if wait:
       self.wait()
 
+  def poli2_tilt_conv(self, tilt_position):
+    tilt = -tilt_position
+    tilt = clamp(tilt + self.tilt_limits[2], self.tilt_limits)
+    return tilt
+      
   def set_tilt(self, tilt_position, wait=False):
-    pos = clamp(tilt_position + self.tilt_limits[2], self.tilt_limits)
-    self.pub_tilt.publish(self.tilt_conv(tilt_position))
+    if self.robot == "poli2":
+      tilt = self.poli2_tilt_conv(tilt_position)
+    else:
+      tilt = clamp(tilt_position + self.tilt_limits[2], self.tilt_limits)
+    self.pub_tilt.publish(tilt)
     if wait:
       self.wait()
 
   def set_pan_tilt(self, pan_position, tilt_position, wait=False):
-    print "requested pan/tilt:", pan_position, tilt_position
+    rospy.loginfo("{} {} {}".format("current pan/tilt:", self.pan_pos, self.tilt_pos))
+    rospy.loginfo("{} {} {}".format("requested pan/tilt:", pan_position, tilt_position))
     pan = clamp(pan_position + self.pan_limits[2], self.pan_limits)
-    tilt = clamp(tilt_position + self.tilt_limits[2], self.tilt_limits)
-    tilt = self.tilt_conv(tilt_position)
-    print "setting pan/tilt:", pan, tilt
+    if self.robot == "poli2":
+      tilt = self.poli2_tilt_conv(tilt_position)
+    else:
+      tilt = clamp(tilt_position + self.tilt_limits[2], self.tilt_limits)
+    
+    rospy.loginfo("{} {} {}".format("setting pan/tilt:", pan, tilt))
     self.pub_pan.publish(pan)
     self.pub_tilt.publish(tilt)
     if wait:

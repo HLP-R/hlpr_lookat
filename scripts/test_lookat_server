@@ -4,8 +4,9 @@ from hlpr_lookat.lookat_server import LookatServer
 from hlpr_lookat.srv import LookAt, LookAtTSRequest
 
 if __name__=="__main__":
+    rospy.init_node("lookat_server_test")
     print("Starting LookAtServer test")
-    srv = LookatServer(spin=False)
+    srv = LookatServer()
 
     req = LookAtTSRequest()
     req.desired_s_tr.child_frame_id = "/head_link"
@@ -14,6 +15,8 @@ if __name__=="__main__":
     req.desired_s_tr.transform.translation.x = 1.0
     req.desired_s_tr.transform.translation.y = 0.5
     srv.handle_req_s_tr(req)
+
+    rospy.sleep(5.0)
 
     req.desired_s_tr.transform.translation.x = 1.0
     req.desired_s_tr.transform.translation.y = 0.0
