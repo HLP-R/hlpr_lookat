@@ -39,7 +39,7 @@ from sensor_msgs.msg import JointState
 import rospy
 import time
 import os
-from math import *
+from math import pi
 
 def clamp(x, limits):
   return max(min(x, limits[1]), limits[0])
@@ -52,14 +52,14 @@ class PanTilt:
     rospy.loginfo("Launching pan/tilt with robot name " + self.robot)
 
     if pan_limits is None and self.robot=="poli2":
-      self.pan_limits  = [-3.14,3.14, 0]
+      self.pan_limits  = [-1.57,1.57, 0]
     elif pan_limits is None:
       self.pan_limits  = [-pi/3.,pi/2., 0]
     else:
       self.pan_limits = pan_limits
 
     if tilt_limits is None and self.robot=="poli2":
-      self.tilt_limits  = [-1.2,0.0,-0.65]
+      self.tilt_limits  = [-1.2,-0.01,-0.65]
     elif tilt_limits is None:
       self.tilt_limits = [-pi/3., pi/3., 0]
     else:
@@ -81,7 +81,8 @@ class PanTilt:
       self.pub_pan  = rospy.Publisher('/pan_controller/command', Float64, queue_size=queue_size)
       rospy.Subscriber("/tilt_controller/state", dynamixel_msg.JointState, self.cb_tilt)
       rospy.Subscriber("/pan_controller/state", dynamixel_msg.JointState, self.cb_pan)
-
+    rospy.loginfo("Giving publishers time to connect...")
+    rospy.sleep(0.5)
     rospy.loginfo("Connecting to pan/tilt motors...")
     log_time = 10
     sleep_time = 0.1

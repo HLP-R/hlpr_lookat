@@ -109,7 +109,6 @@ class LookatServer:
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 rospy.logwarn("Cannot look up translation, not moving head.")
                 return False
-
         pan, tilt = self.pos2theta(position)
         print pan, tilt
         self.pt.set_pan_tilt(pan, tilt)
