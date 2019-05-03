@@ -39,7 +39,7 @@ from sensor_msgs.msg import CompressedImage
 from dynamic_reconfigure.server import Server
 from hlpr_lookat.cfg import ColorTrackConfig
 
-from lookat_opencv import CVLookat
+from hlpr_lookat.lookat_opencv import CVLookat
 
 class BlobLookat(CVLookat):
     def __init__(self, display_on, invert):

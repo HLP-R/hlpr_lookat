@@ -42,12 +42,6 @@ from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import CompressedImage
 from hlpr_lookat.pan_tilt import PanTilt
 
-FOV_VERT = math.radians(58)
-FOV_HORIZ = math.radians(87)
-
-RES_VERT = 480.
-RES_HORIZ = 640.
-
 
 class CVLookat:
     def __init__(self, display_on):
@@ -60,6 +54,8 @@ class CVLookat:
         self._prev_time = rospy.Time.now()
 
         self._pt = PanTilt()
+
+        self.robot = rospy.get_param("/ROBOT_NAME", "default")
         
         rospy.loginfo("Subscribing to image topic")
         self._sub=rospy.Subscriber("image_topic", CompressedImage, self._cb)
@@ -77,6 +73,9 @@ class CVLookat:
         except CvBridgeError as e:
             rospy.logerr(e)
             return
+
+        hres = float(cv_image.shape[1])
+        vres = float(cv_image.shape[0])
         
         i,j = self.process_image(cv_image, self._disp)
         
@@ -92,14 +91,25 @@ class CVLookat:
             
         rospy.loginfo_throttle(20,"Frame processing rate: {} fps".format(rate))
         self._prev_elapsed = (rospy.Time.now()-start).to_nsec()
+
+        hdead = .1*hres
+        vdead = .1*vres
+
         
-        if not i is None and abs(i-RES_HORIZ/2)<40:
+        if not i is None and abs(i-hres/2)<hdead:
             i = None
             
-        if not j is None and abs(j-RES_VERT/2)<40:
+        if not j is None and abs(j-vres/2)<vdead:
             j = None
-        
-        self._pt.lookat_image_coord(i, j, RES_HORIZ, RES_VERT,
-                                   FOV_HORIZ, FOV_VERT,
+
+        if self.robot=="poli2":
+            hfov = math.radians(87)
+            vfov = math.radians(58)
+        else:
+            vfov = math.radians(53.8)
+            hfov = math.radians(84.1)
+            
+        self._pt.lookat_image_coord(i, j, hres, vres,
+                                   hfov, vfov,
                                    pan, tilt)
         self._prev_time = rospy.Time.now()
