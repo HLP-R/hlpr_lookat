@@ -92,8 +92,8 @@ class CVLookat:
         rospy.loginfo_throttle(20,"Frame processing rate: {} fps".format(rate))
         self._prev_elapsed = (rospy.Time.now()-start).to_nsec()
 
-        hdead = .075*hres
-        vdead = .075*vres
+        hdead = .1*hres
+        vdead = .1*vres
 
         
         if not i is None and abs(i-hres/2)<hdead:
