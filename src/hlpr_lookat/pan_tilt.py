@@ -53,7 +53,7 @@ class PanTilt:
     rospy.loginfo("Launching pan/tilt with robot name " + self.robot)
 
     if pan_limits is None and self.robot=="poli2":
-      self.pan_limits  = [-1.57,1.57, 0]
+      self.pan_limits  = [-pi/3,pi/3, 0]
     elif pan_limits is None:
       self.pan_limits  = [-pi/3.,pi/2., 0]
     else:
