@@ -166,7 +166,8 @@ class PanTilt:
       tilt_start = self.tilt_pos
     else:
       tilt_start = tilt
-
+      
+      
     if i is None and not j is None:
       v_angle = -(vfov)*(j/(vrez))+vfov/2.
       tilt_goal = tilt_start + v_angle
@@ -178,7 +179,7 @@ class PanTilt:
     elif not i is None and  not j is None:
       h_angle = -(hfov)*(i/(hrez))+hfov/2.
       v_angle = -(vfov)*(j/(vrez))+vfov/2.
-    
+      
       tilt_goal = tilt_start + v_angle
       pan_goal = pan_start + h_angle
       self.set_pan_tilt(pan_goal, tilt_goal)
