@@ -38,7 +38,7 @@ from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import CompressedImage
 from geometry_msgs.msg import Point
 
-from lookat_opencv import CVLookat
+from hlpr_lookat.lookat_opencv import CVLookat
 
 HAAR_LOCATION = "/opt/ros/kinetic/share/OpenCV-3.3.1-dev/haarcascades/"
 MIN_FACE_SIZE = 50
