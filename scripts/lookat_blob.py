@@ -42,13 +42,14 @@ from hlpr_lookat.cfg import ColorTrackConfig
 from lookat_opencv import CVLookat
 
 class BlobLookat(CVLookat):
-    def __init__(self, display_on):
+    def __init__(self, display_on, invert):
         CVLookat.__init__(self, display_on)
 
         self._lb = np.array([0,0,0])
         self._ub = np.array([255,255,255])
         self._opening_diam = 3
         self._closing_diam = 3
+        self._invert = invert
         self._reconfigure = Server(ColorTrackConfig, self._recon_cb)
 
     def _recon_cb(self,config, level):
@@ -141,18 +142,32 @@ class BlobLookat(CVLookat):
 
         # Don't return anything if there are too many blobs in the scene
         if len(out_blobs)>5 or len(out_blobs)==0:
-            return None,None
-        else:           
-            return out_blobs[0][0]
+            target = None, None
+            return target
+        else:
+            target = list(out_blobs[0][0])
+
+        if self._invert:
+            width, height, channels = cv_image.shape
+            if target[0] > width/2:
+                target[0] = 0
+            else:
+                target[0] = width
+            if target[1] > height/2:
+                target[1] = 0
+            else:
+                target[1] = height
+
+        return target
     
         
 if __name__=="__main__":
     rospy.init_node("blob_lookat")
     parser=argparse.ArgumentParser(description="Use opencv to get motion features from video")
     parser.add_argument('-d', '--display-video', help="Show the masked video on screen", action='store_true')
+    parser.add_argument('-i', '--invert', help="Look away from objects instead of towards them", action='store_true')
     
     args = parser.parse_known_args()[0]
     
-    c = BlobLookat(args.display_video)
+    c = BlobLookat(args.display_video, args.invert)
     rospy.spin()
-    
