@@ -39,6 +39,7 @@ from sensor_msgs.msg import JointState
 import rospy
 import time
 import os
+import copy
 from math import pi
 
 def clamp(x, limits):
@@ -68,7 +69,7 @@ class PanTilt:
     #pan/tilt position in unknown state to start
     self.tilt_pos = None
     self.pan_pos = None
-
+    
     if self.robot=="poli2":
       self.pub_tilt = rospy.Publisher('/tilt_motor/position_controller/command', Float64, queue_size=queue_size)
       self.pub_pan  = rospy.Publisher('/pan_motor/position_controller/command', Float64, queue_size=queue_size)
@@ -116,13 +117,13 @@ class PanTilt:
       self.wait()
 
   def set_pan_tilt(self, pan_position, tilt_position, wait=False):
-    rospy.loginfo("{} {} {}".format("current pan/tilt:", self.pan_pos, self.tilt_pos))
-    rospy.loginfo("{} {} {}".format("requested pan/tilt:", pan_position, tilt_position))
+    rospy.loginfo_throttle(1,"{} {} {}".format("current pan/tilt:", self.pan_pos, self.tilt_pos))
+    
     pan = clamp(pan_position + self.pan_limits[2], self.pan_limits)
     tilt = -tilt_position
     tilt = clamp(tilt + self.tilt_limits[2], self.tilt_limits)
     
-    rospy.loginfo("{} {} {}".format("setting pan/tilt:", pan, tilt))
+    rospy.loginfo_throttle(1,"{} {} {}".format("setting pan/tilt:", pan, tilt))
     self.pub_pan.publish(pan)
     self.pub_tilt.publish(tilt)
     if wait:
@@ -144,12 +145,41 @@ class PanTilt:
 
   def cb_tilt(self, js):
     if self.robot == "poli2":
-      self.tilt_pos = js.position[0]
+      self.tilt_pos = -1*(js.position[0]-self.tilt_limits[2])
     else:
-      self.tilt_pos = js.current_pos
+      self.tilt_pos = -1*(js.current_pos-self.tilt_limits[2])
 
   def cb_pan(self, js):
     if self.robot == "poli2":
-      self.pan_pos = js.position[0]
+      self.pan_pos = js.position[0]+self.pan_limits[2]
     else:
-      self.pan_pos = js.current_pos
+      self.pan_pos = js.current_pos+self.pan_limits[2]
+    
+  def lookat_image_coord(self, i, j, hrez, vrez, hfov, vfov,
+                         pan = None, tilt = None):
+    if pan is None:
+      pan_start = self.pan_pos
+    else:
+      pan_start = pan
+
+    if tilt is None:
+      tilt_start = self.tilt_pos
+    else:
+      tilt_start = tilt
+
+    if i is None and not j is None:
+      v_angle = -(vfov)*(j/(vrez))+vfov/2.
+      tilt_goal = tilt_start + v_angle
+      self.set_tilt(tilt_goal)
+    elif j is None and not i is None:
+      h_angle = -(hfov)*(i/(hrez))+hfov/2.
+      pan_goal = pan_start + h_angle
+      self.set_pan(pan_goal)
+    elif not i is None and  not j is None:
+      h_angle = -(hfov)*(i/(hrez))+hfov/2.
+      v_angle = -(vfov)*(j/(vrez))+vfov/2.
+    
+      tilt_goal = tilt_start + v_angle
+      pan_goal = pan_start + h_angle
+      self.set_pan_tilt(pan_goal, tilt_goal)
+      
