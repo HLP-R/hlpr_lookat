@@ -26,7 +26,7 @@ class Face2TF:
         self.broad = tf.TransformBroadcaster()
         self.listener = tf.TransformListener()
 
-    def img_to_tf(self, img_x, img_y, name, frame):
+    def img_to_tf(self, img_x, img_y, name, frame, time):
         tf_z = 1.0
 
         
@@ -37,6 +37,7 @@ class Face2TF:
         tf_y = tf_z*math.tan(angle_v)
 
         rospy.loginfo("Broadcasting {} at ({},{},{}) [{}]".format(name,tf_x,tf_y,tf_z, frame))
+	'''
         try:
             rospy.loginfo(
                 "looking up transform from frame {} to frame {}".format(
@@ -64,17 +65,18 @@ class Face2TF:
         tf_y = trans.pose.position.y
         tf_z = trans.pose.position.z
         frame = "base_link"
-        
+	'''
+        # time is when image is taken
         self.broad.sendTransform((tf_x,tf_y,tf_z),
                                  (0,0,0,1),
-                                 rospy.Time.now(),
+                                 time,
                                  name,
                                  frame)
         
     def to_tf_cb(self,msg):
         face_idx = 0
         for face in sorted(msg.faces, key= lambda face: (face.face.width+face.face.height)/2.):
-            self.img_to_tf(face.face.x, face.face.y, "face{}".format(face_idx), msg.header.frame_id)
+            self.img_to_tf(face.face.x, face.face.y, "face{}".format(face_idx), msg.header.frame_id, msg.header.stamp)
             face_idx += 1
 
 

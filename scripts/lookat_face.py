@@ -45,7 +45,9 @@ MIN_FACE_SIZE = 50
 MAX_FACE_SIZE = 600
 
 class FaceLookat(CVLookat):
-    def __init__(self, display_on):
+    def __init__(self, display_on, delay_s):
+        self.last = rospy.Time.now()
+        self.delay = rospy.Duration(delay_s)
         CVLookat.__init__(self, display_on)
         self._front_face_cascade = cv2.CascadeClassifier(HAAR_LOCATION+'haarcascade_frontalface_default.xml')
         self._front_face_cascade2 = cv2.CascadeClassifier(HAAR_LOCATION+'haarcascade_frontalface_alt.xml')
@@ -53,6 +55,10 @@ class FaceLookat(CVLookat):
         self._side_face_cascade = cv2.CascadeClassifier(HAAR_LOCATION+'haarcascade_profileface.xml')
 
     def process_image(self, cv_image, display_on):
+        if rospy.Time.now()-self.last < self.delay:
+            rospy.logwarn_throttle(0.5, "Skipping frame")
+            return None, None
+        
         frontfaces1 = []
         frontfaces2 = []
         frontfaces3 = []
@@ -101,13 +107,15 @@ class FaceLookat(CVLookat):
             cv2.imshow("frame0",cv_image)
             cv2.waitKey(3)
 
+        self.last=rospy.Time.now()
         return face_x, face_y
 
 if __name__=="__main__":
     rospy.init_node("background_subtraction_features")
     parser=argparse.ArgumentParser(description="Use opencv to get motion features from video")
     parser.add_argument('-d', '--display-video', help="Show the masked video on screen", action='store_true')
+    parser.add_argument('-t', '--delay-time', help="How long to wait before moving head again", type=float, default = 0.0)
     args = parser.parse_known_args()[0]
     
-    c = FaceLookat(args.display_video)
+    c = FaceLookat(args.display_video, args.delay_time)
     rospy.spin()
